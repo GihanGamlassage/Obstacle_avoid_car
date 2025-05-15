@@ -1,0 +1,126 @@
+#include <Servo.h>
+
+Servo myservo;
+
+const int trigPin = 2;
+const int echoPin = 4;
+float duration, distance;
+
+const int IN1 = 5;
+const int IN2 = 6;
+const int IN3 = 7;
+const int IN4 = 8;
+
+void setup() {
+  myservo.attach(9);  // Servo motor attached
+  myservo.write(90);  // Initial point at 90 degrees
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  check_dist();
+
+  if (distance > 20) {
+    forward();
+  } else {
+    stopped();
+    delay(100);
+
+    myservo.write(0);  // Turn left
+    delay(500);
+    check_dist();
+
+    if (distance > 20) {
+      TurnL();
+      delay(500);
+      myservo.write(90);
+      delay(1000);
+      forward();
+    } else {
+      myservo.write(180);  // Turn right
+      delay(500);
+      check_dist();
+      if (distance > 20) {
+        TurnR();
+        delay(1000);
+        myservo.write(90);
+        delay(1000);
+        forward();
+      } else {
+        myservo.write(90);
+        delay(500);
+        reverse();
+        delay(1000);
+        forward();
+      }
+    }
+  }
+}
+
+// Movement Functions
+void forward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+}
+
+void backward() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+void TurnR() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  delay(300);  // Adjust as needed
+}
+
+void TurnL() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  delay(300);  // Adjust as needed
+}
+
+void stopped() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+void reverse() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  delay(600);  // Adjust as needed
+}
+
+// Distance Check Function
+void check_dist() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH, 30000);
+  distance = (duration * 0.0343) / 2;
+
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+}
